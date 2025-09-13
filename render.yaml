@@ -1,0 +1,34 @@
+services:
+  - type: web
+    name: libro-e-library-backend
+    env: dotnet
+    plan: free
+    buildCommand: dotnet publish -c Release -o ./publish
+    startCommand: dotnet ./publish/E-Library.API.dll
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: ASPNETCORE_URLS
+        value: http://0.0.0.0:$PORT
+      - key: DATABASE_CONNECTION_STRING
+        fromDatabase:
+          name: libro-database
+          property: connectionString
+      - key: JWT_KEY
+        generateValue: true
+      - key: JWT_ISSUER
+        value: E-Library-API
+      - key: JWT_AUDIENCE
+        value: E-Library-Client
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+
+databases:
+  - name: libro-database
+    plan: free
+    databaseName: elibrary
+    user: elibrary_user

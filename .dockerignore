@@ -1,0 +1,71 @@
+# .dockerignore
+# Files and directories to exclude from Docker build context
+
+# Git
+.git
+.gitignore
+
+# Documentation
+README.md
+*.md
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Build artifacts
+bin/
+obj/
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# Environment files
+.env
+.env.local
+.env.development
+.env.production
+.env.staging
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Uploads directory (will be created at runtime)
+wwwroot/uploads/
+
+# Test files
+*Test*
+*test*
+
+# Coverage reports
+coverage/
+*.coverage
+*.coveragexml
+
+# Temporary files
+*.tmp
+*.temp
