@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "uwYSXN5K0/U=",
+  "dgSpecHash": "+ZxX58agzWE=",
   "success": true,
-  "projectFilePath": "E:\\Work\\IDS Fin-tech\\E-Library\\backend\\E-Library.API\\E-Library.API.csproj",
+  "projectFilePath": "E:\\Work\\IDS Fin-tech\\E-Library\\elibrary\\backend\\E-Library.API\\E-Library.API.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\LENOVO\\.nuget\\packages\\bcrypt.net-next\\4.0.3\\bcrypt.net-next.4.0.3.nupkg.sha512",
     "C:\\Users\\LENOVO\\.nuget\\packages\\dapper\\2.1.66\\dapper.2.1.66.nupkg.sha512",

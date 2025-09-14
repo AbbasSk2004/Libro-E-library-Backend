@@ -319,3 +319,5 @@ E:\Work\IDS Fin-tech\E-Library\backend\E-Library.API\obj\Debug\net9.0\E-Library.
 E:\Work\IDS Fin-tech\E-Library\backend\E-Library.API\obj\Debug\net9.0\E-Library.API.genruntimeconfig.cache
 E:\Work\IDS Fin-tech\E-Library\backend\E-Library.API\obj\Debug\net9.0\ref\E-Library.API.dll
 E:\Work\IDS Fin-tech\E-Library\backend\E-Library.API\bin\Debug\net9.0\appsettings.Production.json
+E:\Work\IDS Fin-tech\E-Library\elibrary\backend\E-Library.API\bin\Debug\net9.0\appsettings.Production.json
+E:\Work\IDS Fin-tech\E-Library\elibrary\backend\E-Library.API\obj\Debug\net9.0\E-Library.API.sourcelink.json

@@ -23,15 +23,45 @@ var jwtKey = Environment.GetEnvironmentVariable("JWT_KEY");
 var jwtIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER");
 var jwtAudience = Environment.GetEnvironmentVariable("JWT_AUDIENCE");
 
+// Configure email settings from environment variables
+var smtpServer = Environment.GetEnvironmentVariable("SMTP_SERVER");
+var smtpPort = Environment.GetEnvironmentVariable("SMTP_PORT");
+var smtpUsername = Environment.GetEnvironmentVariable("SMTP_USERNAME");
+var smtpPassword = Environment.GetEnvironmentVariable("SMTP_PASSWORD");
+var fromEmail = Environment.GetEnvironmentVariable("FROM_EMAIL");
+var fromName = Environment.GetEnvironmentVariable("FROM_NAME");
+
+// Configure frontend URLs from environment variables
+var frontendUrls = Environment.GetEnvironmentVariable("FRONTEND_URLS");
+var emailVerificationExpiryHours = Environment.GetEnvironmentVariable("EMAIL_VERIFICATION_EXPIRY_HOURS");
+
 Console.WriteLine($"DB Connection: {dbConnection?.Substring(0, Math.Min(50, dbConnection?.Length ?? 0))}...");
 Console.WriteLine($"JWT Key: {jwtKey?.Substring(0, Math.Min(10, jwtKey?.Length ?? 0))}...");
 Console.WriteLine($"JWT Issuer: {jwtIssuer}");
 Console.WriteLine($"JWT Audience: {jwtAudience}");
+Console.WriteLine($"SMTP Server: {smtpServer}");
+Console.WriteLine($"From Email: {fromEmail}");
 
 builder.Configuration["ConnectionStrings:DefaultConnection"] = dbConnection;
 builder.Configuration["Jwt:Key"] = jwtKey;
 builder.Configuration["Jwt:Issuer"] = jwtIssuer;
 builder.Configuration["Jwt:Audience"] = jwtAudience;
+
+// Email settings
+builder.Configuration["EmailSettings:SmtpServer"] = smtpServer;
+builder.Configuration["EmailSettings:SmtpPort"] = smtpPort;
+builder.Configuration["EmailSettings:SmtpUsername"] = smtpUsername;
+builder.Configuration["EmailSettings:SmtpPassword"] = smtpPassword;
+builder.Configuration["EmailSettings:FromEmail"] = fromEmail;
+builder.Configuration["EmailSettings:FromName"] = fromName;
+
+// App settings
+if (!string.IsNullOrEmpty(frontendUrls))
+{
+    var urls = frontendUrls.Split(',', StringSplitOptions.RemoveEmptyEntries);
+    builder.Configuration["AppSettings:FrontendUrls"] = string.Join(",", urls);
+}
+builder.Configuration["AppSettings:EmailVerificationExpiryHours"] = emailVerificationExpiryHours;
 
 // Add services to the container
 builder.Services.AddControllers();
@@ -68,7 +98,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("http://localhost:5173", "https://libro-e-library.vercel.app")
+        policy.WithOrigins("http://localhost:3000", "http://localhost:5173", "https://libro-e-library.vercel.app")
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
@@ -100,11 +130,13 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IBookRepository, BookRepository>();
 builder.Services.AddScoped<IBorrowedBookRepository, BorrowedBookRepository>();
 builder.Services.AddScoped<IReturnedBookRepository, ReturnedBookRepository>();
+builder.Services.AddScoped<IEmailVerificationRepository, EmailVerificationRepository>();
 
 // Add services
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IBookService, BookService>();
 builder.Services.AddScoped<IStorageService, StorageService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 // Add health checks
 builder.Services.AddHealthChecks();

@@ -18,6 +18,7 @@ namespace E_Library.API.DTOs
         public string Email { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
         public string Role { get; set; } = "User";
+        public bool IsEmailVerified { get; set; }
         public string? CreatedAt { get; set; }
         public string? UpdatedAt { get; set; }
     }
@@ -75,5 +76,21 @@ namespace E_Library.API.DTOs
         public int? NumberOfCopies { get; set; }
         public bool? Available { get; set; }
         public string? CoverImage { get; set; }
+    }
+
+    public class EmailVerificationRequest
+    {
+        public string Token { get; set; } = string.Empty; // This will contain the verification code
+    }
+
+    public class ResendVerificationRequest
+    {
+        public string Email { get; set; } = string.Empty;
+    }
+
+    public class EmailVerificationResponse
+    {
+        public bool Success { get; set; }
+        public string Message { get; set; } = string.Empty;
     }
 }

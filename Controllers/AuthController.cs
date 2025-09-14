@@ -48,7 +48,7 @@ namespace E_Library.API.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<ActionResult<LoginResponse>> Register([FromBody] RegisterRequest request)
+        public async Task<ActionResult<EmailVerificationResponse>> Register([FromBody] RegisterRequest request)
         {
             try
             {
@@ -57,24 +57,24 @@ namespace E_Library.API.Controllers
                 if (string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.Password) || string.IsNullOrEmpty(request.Name))
                 {
                     Console.WriteLine("Email, password, or name is null or empty");
-                    return BadRequest(new { message = "Email, password, and name are required" });
+                    return BadRequest(new EmailVerificationResponse { Success = false, Message = "Email, password, and name are required" });
                 }
 
                 var result = await _authService.RegisterAsync(request);
-                if (result == null)
+                if (!result.Success)
                 {
-                    Console.WriteLine("Registration failed - user already exists");
-                    return BadRequest(new { message = "User with this email already exists" });
+                    Console.WriteLine($"Registration failed: {result.Message}");
+                    return BadRequest(result);
                 }
 
-                Console.WriteLine($"Registration successful for user: {result.User.Email}");
+                Console.WriteLine($"Registration successful for user: {request.Email}");
                 return Ok(result);
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Register error: {ex.Message}");
                 Console.WriteLine($"Stack trace: {ex.StackTrace}");
-                return StatusCode(500, new { message = "An error occurred during registration", error = ex.Message, details = ex.ToString() });
+                return StatusCode(500, new EmailVerificationResponse { Success = false, Message = "An error occurred during registration" });
             }
         }
 
@@ -106,6 +106,46 @@ namespace E_Library.API.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = "An error occurred while fetching profile", error = ex.Message });
+            }
+        }
+
+        [HttpPost("verify-email")]
+        public async Task<ActionResult<EmailVerificationResponse>> VerifyEmail([FromBody] EmailVerificationRequest request)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(request.Token))
+                {
+                    return BadRequest(new EmailVerificationResponse { Success = false, Message = "Verification code is required" });
+                }
+
+                var result = await _authService.VerifyEmailAsync(request.Token);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Verify email error: {ex.Message}");
+                return StatusCode(500, new EmailVerificationResponse { Success = false, Message = "An error occurred during email verification" });
+            }
+        }
+
+        [HttpPost("resend-verification")]
+        public async Task<ActionResult<EmailVerificationResponse>> ResendVerification([FromBody] ResendVerificationRequest request)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(request.Email))
+                {
+                    return BadRequest(new EmailVerificationResponse { Success = false, Message = "Email is required" });
+                }
+
+                var result = await _authService.ResendVerificationEmailAsync(request.Email);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Resend verification error: {ex.Message}");
+                return StatusCode(500, new EmailVerificationResponse { Success = false, Message = "An error occurred while resending verification email" });
             }
         }
     }

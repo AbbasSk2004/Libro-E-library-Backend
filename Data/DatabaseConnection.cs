@@ -53,6 +53,11 @@ namespace E_Library.API.Data
                     Console.WriteLine("Creating database schema...");
                     await CreateSchemaAsync(connection);
                 }
+                else
+                {
+                    // Check if we need to add new columns to existing Users table
+                    await UpdateSchemaAsync(connection);
+                }
                 
                 // Test a simple query
                 var result = await connection.QueryFirstOrDefaultAsync<int>("SELECT 1");
@@ -74,6 +79,9 @@ namespace E_Library.API.Data
                     ""Email"" VARCHAR(255) UNIQUE NOT NULL,
                     ""Name"" VARCHAR(255) NOT NULL,
                     ""PasswordHash"" TEXT NOT NULL,
+                    ""IsEmailVerified"" BOOLEAN DEFAULT FALSE,
+                    ""EmailVerificationToken"" VARCHAR(500),
+                    ""EmailVerificationTokenExpires"" TIMESTAMP WITH TIME ZONE,
                     ""CreatedAt"" TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
                     ""UpdatedAt"" TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
                     ""Role"" VARCHAR(50) NOT NULL DEFAULT 'User'
@@ -120,10 +128,68 @@ namespace E_Library.API.Data
                     FOREIGN KEY (""UserId"") REFERENCES ""Users""(""Id"") ON DELETE CASCADE,
                     FOREIGN KEY (""BookId"") REFERENCES ""Books""(""Id"") ON DELETE CASCADE
                 );
+
+                CREATE TABLE IF NOT EXISTS ""EmailVerifications"" (
+                    ""Id"" SERIAL PRIMARY KEY,
+                    ""UserId"" INTEGER NOT NULL,
+                    ""Token"" VARCHAR(500) UNIQUE NOT NULL,
+                    ""ExpiresAt"" TIMESTAMP WITH TIME ZONE NOT NULL,
+                    ""CreatedAt"" TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+                    ""IsUsed"" BOOLEAN DEFAULT FALSE,
+                    FOREIGN KEY (""UserId"") REFERENCES ""Users""(""Id"") ON DELETE CASCADE
+                );
             ";
 
             await connection.ExecuteAsync(schema);
             Console.WriteLine("Database schema created successfully");
+        }
+
+        private async Task UpdateSchemaAsync(IDbConnection connection)
+        {
+            try
+            {
+                // Check if IsEmailVerified column exists
+                var columnExists = await connection.QueryFirstOrDefaultAsync<int>(
+                    "SELECT COUNT(*) FROM information_schema.columns WHERE table_name = 'Users' AND column_name = 'IsEmailVerified'");
+                
+                if (columnExists == 0)
+                {
+                    Console.WriteLine("Adding email verification columns to Users table...");
+                    await connection.ExecuteAsync(@"
+                        ALTER TABLE ""Users"" 
+                        ADD COLUMN ""IsEmailVerified"" BOOLEAN DEFAULT FALSE,
+                        ADD COLUMN ""EmailVerificationToken"" VARCHAR(500),
+                        ADD COLUMN ""EmailVerificationTokenExpires"" TIMESTAMP WITH TIME ZONE;
+                    ");
+                    Console.WriteLine("Email verification columns added to Users table");
+                }
+
+                // Check if EmailVerifications table exists
+                var tableExists = await connection.QueryFirstOrDefaultAsync<int>(
+                    "SELECT COUNT(*) FROM information_schema.tables WHERE table_name = 'EmailVerifications'");
+                
+                if (tableExists == 0)
+                {
+                    Console.WriteLine("Creating EmailVerifications table...");
+                    await connection.ExecuteAsync(@"
+                        CREATE TABLE ""EmailVerifications"" (
+                            ""Id"" SERIAL PRIMARY KEY,
+                            ""UserId"" INTEGER NOT NULL,
+                            ""Token"" VARCHAR(500) UNIQUE NOT NULL,
+                            ""ExpiresAt"" TIMESTAMP WITH TIME ZONE NOT NULL,
+                            ""CreatedAt"" TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+                            ""IsUsed"" BOOLEAN DEFAULT FALSE,
+                            FOREIGN KEY (""UserId"") REFERENCES ""Users""(""Id"") ON DELETE CASCADE
+                        );
+                    ");
+                    Console.WriteLine("EmailVerifications table created");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Schema update error: {ex.Message}");
+                // Don't throw here as the app should still work if schema update fails
+            }
         }
     }
 }

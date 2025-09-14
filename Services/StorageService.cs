@@ -9,6 +9,7 @@ namespace E_Library.API.Services
         Task<string> GetIdCardUrlAsync(string fileName);
         Task<string> UploadBookCoverAsync(IFormFile file, int bookId);
         Task<string> GetBookCoverUrlAsync(string fileName);
+        Task<bool> DeleteBookCoverAsync(string fileName);
     }
 
     public class StorageService : IStorageService
@@ -155,6 +156,35 @@ namespace E_Library.API.Services
             {
                 Console.WriteLine($"Error getting Supabase storage URL: {ex.Message}");
                 throw;
+            }
+        }
+
+        public async Task<bool> DeleteBookCoverAsync(string fileName)
+        {
+            try
+            {
+                // Extract just the filename without bucket prefix if present
+                string filePath;
+                if (fileName.StartsWith($"{_bookCoverBucketName}/"))
+                {
+                    // Remove bucket prefix to get just the filename
+                    filePath = fileName.Substring($"{_bookCoverBucketName}/".Length);
+                }
+                else
+                {
+                    filePath = fileName;
+                }
+
+                await _supabase.Storage
+                    .From(_bookCoverBucketName)
+                    .Remove(filePath);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error deleting book cover from Supabase storage: {ex.Message}");
+                return false;
             }
         }
     }

@@ -330,7 +330,6 @@ namespace E_Library.API.Controllers
                 var description = form["description"].FirstOrDefault();
                 var publicationYearStr = form["publishedYear"].FirstOrDefault();
                 var numberOfCopiesStr = form["numberOfCopies"].FirstOrDefault();
-                var availableStr = form["available"].FirstOrDefault();
                 var coverImage = form.Files["coverImage"];
 
                 if (string.IsNullOrEmpty(title) || string.IsNullOrEmpty(author))
@@ -348,10 +347,8 @@ namespace E_Library.API.Controllers
                     numberOfCopies = 1;
                 }
 
-                if (!bool.TryParse(availableStr, out var available))
-                {
-                    available = true;
-                }
+                // Availability is determined by numberOfCopies > 0
+                var available = numberOfCopies > 0;
 
                 // Handle cover image upload
                 string? coverImagePath = null;
@@ -439,7 +436,7 @@ namespace E_Library.API.Controllers
         }
 
         [HttpPut("books/{id}")]
-        public async Task<ActionResult<BookDto>> UpdateBook(int id, [FromBody] UpdateBookRequest request)
+        public async Task<ActionResult<BookDto>> UpdateBook(int id)
         {
             try
             {
@@ -449,23 +446,52 @@ namespace E_Library.API.Controllers
                     return NotFound(new { message = "Book not found" });
                 }
 
+                // Parse form data
+                var form = await Request.ReadFormAsync();
+                var title = form["title"].FirstOrDefault();
+                var author = form["author"].FirstOrDefault();
+                var category = form["category"].FirstOrDefault();
+                var description = form["description"].FirstOrDefault();
+                var publicationYearStr = form["publishedYear"].FirstOrDefault();
+                var numberOfCopiesStr = form["numberOfCopies"].FirstOrDefault();
+                var coverImage = form.Files["coverImage"];
+
+                // Store old cover image path for deletion
+                string? oldCoverImagePath = book.CoverImage;
+
                 // Update only provided fields
-                if (!string.IsNullOrEmpty(request.Title))
-                    book.Title = request.Title;
-                if (!string.IsNullOrEmpty(request.Author))
-                    book.Author = request.Author;
-                if (request.Description != null)
-                    book.Description = request.Description;
-                if (request.PublishedYear.HasValue)
-                    book.PublishedYear = request.PublishedYear.Value;
-                if (!string.IsNullOrEmpty(request.Category))
-                    book.Category = request.Category;
-                if (request.NumberOfCopies.HasValue)
-                    book.NumberOfCopies = request.NumberOfCopies.Value;
-                if (request.Available.HasValue)
-                    book.Available = request.Available.Value;
-                if (request.CoverImage != null)
-                    book.CoverImage = request.CoverImage;
+                if (!string.IsNullOrEmpty(title))
+                    book.Title = title;
+                if (!string.IsNullOrEmpty(author))
+                    book.Author = author;
+                if (!string.IsNullOrEmpty(description))
+                    book.Description = description;
+                if (!string.IsNullOrEmpty(category))
+                    book.Category = category;
+                
+                if (int.TryParse(publicationYearStr, out var publicationYear))
+                    book.PublishedYear = publicationYear;
+                
+                if (int.TryParse(numberOfCopiesStr, out var numberOfCopies))
+                {
+                    book.NumberOfCopies = numberOfCopies;
+                    // Availability is determined by numberOfCopies > 0
+                    book.Available = numberOfCopies > 0;
+                }
+
+                // Handle cover image replacement
+                if (coverImage != null && coverImage.Length > 0)
+                {
+                    // Delete old cover image if it exists
+                    if (!string.IsNullOrEmpty(oldCoverImagePath))
+                    {
+                        await _storageService.DeleteBookCoverAsync(oldCoverImagePath);
+                    }
+
+                    // Upload new cover image
+                    var newCoverImagePath = await _storageService.UploadBookCoverAsync(coverImage, book.Id);
+                    book.CoverImage = newCoverImagePath;
+                }
 
                 book.UpdatedAt = DateTime.UtcNow;
 
