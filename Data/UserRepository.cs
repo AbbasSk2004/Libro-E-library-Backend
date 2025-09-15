@@ -34,7 +34,7 @@ namespace E_Library.API.Data
                 Console.WriteLine($"UserRepository: Connection established, querying database...");
                 
                 // Simple query that works with Supabase
-                var sql = "SELECT \"Id\", \"Email\", \"Name\", \"PasswordHash\", \"Role\", \"IsEmailVerified\", \"EmailVerificationToken\", \"EmailVerificationTokenExpires\", \"CreatedAt\", \"UpdatedAt\" FROM \"Users\" WHERE \"Email\" = @Email";
+                var sql = "SELECT \"Id\", \"Email\", \"Name\", \"PasswordHash\", \"Role\", \"IsEmailVerified\", \"CreatedAt\", \"UpdatedAt\" FROM \"Users\" WHERE \"Email\" = @Email";
                 var parameters = new { Email = email };
                 
                 Console.WriteLine($"UserRepository: Executing user query");
@@ -55,7 +55,7 @@ namespace E_Library.API.Data
         {
             using var connection = await _dbConnection.GetConnectionAsync();
             return await connection.QueryFirstOrDefaultAsync<User>(
-                "SELECT \"Id\", \"Email\", \"Name\", \"PasswordHash\", \"Role\", \"IsEmailVerified\", \"EmailVerificationToken\", \"EmailVerificationTokenExpires\", \"CreatedAt\", \"UpdatedAt\" FROM \"Users\" WHERE \"Id\" = @Id", 
+                "SELECT \"Id\", \"Email\", \"Name\", \"PasswordHash\", \"Role\", \"IsEmailVerified\", \"CreatedAt\", \"UpdatedAt\" FROM \"Users\" WHERE \"Id\" = @Id", 
                 new { Id = id });
         }
 
@@ -69,8 +69,8 @@ namespace E_Library.API.Data
                 
                 // Insert the user
                 var sql = @"
-                    INSERT INTO ""Users"" (""Email"", ""Name"", ""PasswordHash"", ""Role"", ""IsEmailVerified"", ""EmailVerificationToken"", ""EmailVerificationTokenExpires"", ""CreatedAt"", ""UpdatedAt"")
-                    VALUES (@Email, @Name, @PasswordHash, @Role, @IsEmailVerified, @EmailVerificationToken, @EmailVerificationTokenExpires, @CreatedAt, @UpdatedAt)";
+                    INSERT INTO ""Users"" (""Email"", ""Name"", ""PasswordHash"", ""Role"", ""IsEmailVerified"", ""CreatedAt"", ""UpdatedAt"")
+                    VALUES (@Email, @Name, @PasswordHash, @Role, @IsEmailVerified, @CreatedAt, @UpdatedAt)";
                 
                 Console.WriteLine($"UserRepository: Executing insert query for user: {user.Email}");
                 await connection.ExecuteAsync(sql, user);
@@ -103,8 +103,7 @@ namespace E_Library.API.Data
             await connection.ExecuteAsync(@"
                 UPDATE ""Users"" 
                 SET ""Email"" = @Email, ""Name"" = @Name, ""PasswordHash"" = @PasswordHash, ""Role"" = @Role, 
-                    ""IsEmailVerified"" = @IsEmailVerified, ""EmailVerificationToken"" = @EmailVerificationToken, 
-                    ""EmailVerificationTokenExpires"" = @EmailVerificationTokenExpires, ""UpdatedAt"" = @UpdatedAt
+                    ""IsEmailVerified"" = @IsEmailVerified, ""UpdatedAt"" = @UpdatedAt
                 WHERE ""Id"" = @Id", user);
         }
 
@@ -112,7 +111,7 @@ namespace E_Library.API.Data
         {
             using var connection = await _dbConnection.GetConnectionAsync();
             return await connection.QueryAsync<User>(
-                "SELECT \"Id\", \"Email\", \"Name\", \"PasswordHash\", \"Role\", \"IsEmailVerified\", \"EmailVerificationToken\", \"EmailVerificationTokenExpires\", \"CreatedAt\", \"UpdatedAt\" FROM \"Users\" ORDER BY \"CreatedAt\" DESC");
+                "SELECT \"Id\", \"Email\", \"Name\", \"PasswordHash\", \"Role\", \"IsEmailVerified\", \"CreatedAt\", \"UpdatedAt\" FROM \"Users\" ORDER BY \"CreatedAt\" DESC");
         }
 
         public async Task DeleteAsync(int id)

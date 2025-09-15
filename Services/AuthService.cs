@@ -12,11 +12,19 @@ namespace E_Library.API.Services
 {
     public interface IAuthService
     {
-        Task<LoginResponse?> LoginAsync(LoginRequest request);
+        Task<LoginResult> LoginAsync(LoginRequest request);
         Task<EmailVerificationResponse> RegisterAsync(RegisterRequest request);
         Task<UserDto?> GetProfileAsync(int userId);
         Task<EmailVerificationResponse> VerifyEmailAsync(string token);
         Task<EmailVerificationResponse> ResendVerificationEmailAsync(string email);
+    }
+
+    public class LoginResult
+    {
+        public bool Success { get; set; }
+        public LoginResponse? Data { get; set; }
+        public string ErrorMessage { get; set; } = string.Empty;
+        public string ErrorType { get; set; } = string.Empty; // "user_not_found", "invalid_password", "email_not_verified"
     }
 
     public class AuthService : IAuthService
@@ -34,7 +42,7 @@ namespace E_Library.API.Services
             _configuration = configuration;
         }
 
-        public async Task<LoginResponse?> LoginAsync(LoginRequest request)
+        public async Task<LoginResult> LoginAsync(LoginRequest request)
         {
             try
             {
@@ -44,7 +52,12 @@ namespace E_Library.API.Services
                 if (user == null)
                 {
                     Console.WriteLine($"AuthService: User not found for email: {request.Email}");
-                    return null;
+                    return new LoginResult
+                    {
+                        Success = false,
+                        ErrorMessage = "Invalid email or password",
+                        ErrorType = "user_not_found"
+                    };
                 }
 
                 Console.WriteLine($"AuthService: User found: {user.Email}, checking password...");
@@ -53,21 +66,43 @@ namespace E_Library.API.Services
                 if (!isPasswordValid)
                 {
                     Console.WriteLine($"AuthService: Invalid password for user: {user.Email}");
-                    return null;
+                    return new LoginResult
+                    {
+                        Success = false,
+                        ErrorMessage = "Invalid email or password",
+                        ErrorType = "invalid_password"
+                    };
                 }
 
-                Console.WriteLine($"AuthService: Password valid, generating token for user: {user.Email}");
+                // Check if email is verified
+                if (!user.IsEmailVerified)
+                {
+                    Console.WriteLine($"AuthService: Email not verified for user: {user.Email}");
+                    return new LoginResult
+                    {
+                        Success = false,
+                        ErrorMessage = "Please verify your email before logging in. Check your email for verification instructions.",
+                        ErrorType = "email_not_verified"
+                    };
+                }
+
+                Console.WriteLine($"AuthService: Password valid and email verified, generating token for user: {user.Email}");
                 
                 var token = GenerateJwtToken(user);
-                return new LoginResponse
+                return new LoginResult
                 {
-                    Token = token,
-                    User = new UserDto
+                    Success = true,
+                    Data = new LoginResponse
                     {
-                        Id = user.Id,
-                        Email = user.Email,
-                        Name = user.Name,
-                        Role = user.Role
+                        Token = token,
+                        User = new UserDto
+                        {
+                            Id = user.Id,
+                            Email = user.Email,
+                            Name = user.Name,
+                            Role = user.Role,
+                            IsEmailVerified = user.IsEmailVerified
+                        }
                     }
                 };
             }
@@ -75,7 +110,12 @@ namespace E_Library.API.Services
             {
                 Console.WriteLine($"AuthService LoginAsync error: {ex.Message}");
                 Console.WriteLine($"AuthService Stack trace: {ex.StackTrace}");
-                throw;
+                return new LoginResult
+                {
+                    Success = false,
+                    ErrorMessage = "An error occurred during login",
+                    ErrorType = "server_error"
+                };
             }
         }
 

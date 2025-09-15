@@ -80,8 +80,6 @@ namespace E_Library.API.Data
                     ""Name"" VARCHAR(255) NOT NULL,
                     ""PasswordHash"" TEXT NOT NULL,
                     ""IsEmailVerified"" BOOLEAN DEFAULT FALSE,
-                    ""EmailVerificationToken"" VARCHAR(500),
-                    ""EmailVerificationTokenExpires"" TIMESTAMP WITH TIME ZONE,
                     ""CreatedAt"" TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
                     ""UpdatedAt"" TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
                     ""Role"" VARCHAR(50) NOT NULL DEFAULT 'User'
@@ -157,9 +155,7 @@ namespace E_Library.API.Data
                     Console.WriteLine("Adding email verification columns to Users table...");
                     await connection.ExecuteAsync(@"
                         ALTER TABLE ""Users"" 
-                        ADD COLUMN ""IsEmailVerified"" BOOLEAN DEFAULT FALSE,
-                        ADD COLUMN ""EmailVerificationToken"" VARCHAR(500),
-                        ADD COLUMN ""EmailVerificationTokenExpires"" TIMESTAMP WITH TIME ZONE;
+                        ADD COLUMN ""IsEmailVerified"" BOOLEAN DEFAULT FALSE;
                     ");
                     Console.WriteLine("Email verification columns added to Users table");
                 }

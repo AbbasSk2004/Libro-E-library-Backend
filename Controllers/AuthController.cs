@@ -17,7 +17,7 @@ namespace E_Library.API.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest request)
+        public async Task<ActionResult<object>> Login([FromBody] LoginRequest request)
         {
             try
             {
@@ -30,14 +30,29 @@ namespace E_Library.API.Controllers
                 }
 
                 var result = await _authService.LoginAsync(request);
-                if (result == null)
+                if (!result.Success)
                 {
-                    Console.WriteLine("Login failed - invalid credentials");
-                    return Unauthorized(new { message = "Invalid email or password" });
+                    Console.WriteLine($"Login failed: {result.ErrorType} - {result.ErrorMessage}");
+                    
+                    // Return different status codes based on error type
+                    if (result.ErrorType == "email_not_verified")
+                    {
+                        return Unauthorized(new { 
+                            message = result.ErrorMessage, 
+                            errorType = result.ErrorType 
+                        });
+                    }
+                    else
+                    {
+                        return Unauthorized(new { 
+                            message = result.ErrorMessage, 
+                            errorType = result.ErrorType 
+                        });
+                    }
                 }
 
-                Console.WriteLine($"Login successful for user: {result.User.Email}");
-                return Ok(result);
+                Console.WriteLine($"Login successful for user: {result.Data!.User.Email}");
+                return Ok(result.Data);
             }
             catch (Exception ex)
             {

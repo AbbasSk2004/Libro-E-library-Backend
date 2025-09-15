@@ -8,8 +8,6 @@ namespace E_Library.API.Models
         public string PasswordHash { get; set; } = string.Empty;
         public string Role { get; set; } = "User";
         public bool IsEmailVerified { get; set; } = false;
-        public string? EmailVerificationToken { get; set; }
-        public DateTime? EmailVerificationTokenExpires { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
     }
