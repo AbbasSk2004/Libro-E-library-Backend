@@ -17,6 +17,8 @@
     <PackageReference Include="Npgsql" Version="8.0.4" />
     <PackageReference Include="Supabase" Version="1.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="7.0.0" />
+    <PackageReference Include="Google.Apis.Gmail.v1" Version="1.69.0.3742" />
+    <PackageReference Include="Google.Apis.Auth" Version="1.69.0" />
   </ItemGroup>
 
 </Project>

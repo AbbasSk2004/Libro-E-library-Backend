@@ -23,13 +23,11 @@ var jwtKey = Environment.GetEnvironmentVariable("JWT_KEY");
 var jwtIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER");
 var jwtAudience = Environment.GetEnvironmentVariable("JWT_AUDIENCE");
 
-// Configure email settings from environment variables
-var smtpServer = Environment.GetEnvironmentVariable("SMTP_SERVER");
-var smtpPort = Environment.GetEnvironmentVariable("SMTP_PORT");
-var smtpUsername = Environment.GetEnvironmentVariable("SMTP_USERNAME");
-var smtpPassword = Environment.GetEnvironmentVariable("SMTP_PASSWORD");
-var fromEmail = Environment.GetEnvironmentVariable("FROM_EMAIL");
-var fromName = Environment.GetEnvironmentVariable("FROM_NAME");
+// Gmail API credentials
+var googleClientId = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_ID");
+var googleClientSecret = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_SECRET");
+var gmailRefreshToken = Environment.GetEnvironmentVariable("GMAIL_REFRESH_TOKEN");
+var gmailUser = Environment.GetEnvironmentVariable("GMAIL_USER");
 
 // Configure frontend URLs from environment variables
 var frontendUrls = Environment.GetEnvironmentVariable("FRONTEND_URLS");
@@ -39,21 +37,18 @@ Console.WriteLine($"DB Connection: {dbConnection?.Substring(0, Math.Min(50, dbCo
 Console.WriteLine($"JWT Key: {jwtKey?.Substring(0, Math.Min(10, jwtKey?.Length ?? 0))}...");
 Console.WriteLine($"JWT Issuer: {jwtIssuer}");
 Console.WriteLine($"JWT Audience: {jwtAudience}");
-Console.WriteLine($"SMTP Server: {smtpServer}");
-Console.WriteLine($"From Email: {fromEmail}");
+Console.WriteLine($"Email Sender (Gmail User): {gmailUser}");
 
 builder.Configuration["ConnectionStrings:DefaultConnection"] = dbConnection;
 builder.Configuration["Jwt:Key"] = jwtKey;
 builder.Configuration["Jwt:Issuer"] = jwtIssuer;
 builder.Configuration["Jwt:Audience"] = jwtAudience;
 
-// Email settings
-builder.Configuration["EmailSettings:SmtpServer"] = smtpServer;
-builder.Configuration["EmailSettings:SmtpPort"] = smtpPort;
-builder.Configuration["EmailSettings:SmtpUsername"] = smtpUsername;
-builder.Configuration["EmailSettings:SmtpPassword"] = smtpPassword;
-builder.Configuration["EmailSettings:FromEmail"] = fromEmail;
-builder.Configuration["EmailSettings:FromName"] = fromName;
+// Gmail API settings
+builder.Configuration["EmailSettings:GoogleClientId"] = googleClientId;
+builder.Configuration["EmailSettings:GoogleClientSecret"] = googleClientSecret;
+builder.Configuration["EmailSettings:GmailRefreshToken"] = gmailRefreshToken;
+builder.Configuration["EmailSettings:GmailUser"] = gmailUser;
 
 // App settings
 if (!string.IsNullOrEmpty(frontendUrls))

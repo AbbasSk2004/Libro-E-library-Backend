@@ -1,6 +1,9 @@
-using System.Net;
-using System.Net.Mail;
 using System.Text;
+using Google.Apis.Auth.OAuth2;
+using Google.Apis.Gmail.v1;
+using Google.Apis.Gmail.v1.Data;
+using Google.Apis.Services;
+using Google.Apis.Util.Store;
 
 namespace E_Library.API.Services
 {
@@ -33,41 +36,101 @@ namespace E_Library.API.Services
         {
             try
             {
-                var smtpServer = _configuration["EmailSettings:SmtpServer"];
-                var smtpPort = int.Parse(_configuration["EmailSettings:SmtpPort"] ?? "587");
-                var smtpUsername = _configuration["EmailSettings:SmtpUsername"];
-                var smtpPassword = _configuration["EmailSettings:SmtpPassword"];
-                var fromEmail = _configuration["EmailSettings:FromEmail"];
-                var fromName = _configuration["EmailSettings:FromName"];
-
-                if (string.IsNullOrEmpty(smtpServer) || string.IsNullOrEmpty(smtpUsername) || 
-                    string.IsNullOrEmpty(smtpPassword) || string.IsNullOrEmpty(fromEmail))
+                var gmailUser = _configuration["EmailSettings:GmailUser"];
+                if (string.IsNullOrWhiteSpace(gmailUser))
                 {
-                    _logger.LogError("Email configuration is incomplete");
+                    _logger.LogError("Gmail user is not configured");
                     return false;
                 }
 
-                using var client = new SmtpClient(smtpServer, smtpPort);
-                client.EnableSsl = true;
-                client.Credentials = new NetworkCredential(smtpUsername, smtpPassword);
-
-                using var message = new MailMessage();
-                message.From = new MailAddress(fromEmail, fromName);
-                message.To.Add(toEmail);
-                message.Subject = subject;
-                message.Body = body;
-                message.IsBodyHtml = isHtml;
-                message.BodyEncoding = Encoding.UTF8;
-
-                await client.SendMailAsync(message);
-                _logger.LogInformation($"Email sent successfully to {toEmail}");
-                return true;
+                return await SendViaGmailApiAsync(gmailUser!, toEmail, subject, body, isHtml);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Failed to send email to {toEmail}");
                 return false;
             }
+        }
+
+        private async Task<bool> SendViaGmailApiAsync(string fromEmail, string toEmail, string subject, string body, bool isHtml)
+        {
+            try
+            {
+                var clientId = _configuration["EmailSettings:GoogleClientId"]!;
+                var clientSecret = _configuration["EmailSettings:GoogleClientSecret"]!;
+                var refreshToken = _configuration["EmailSettings:GmailRefreshToken"]!;
+
+                var initializer = new Google.Apis.Auth.OAuth2.Flows.GoogleAuthorizationCodeFlow.Initializer
+                {
+                    ClientSecrets = new ClientSecrets
+                    {
+                        ClientId = clientId,
+                        ClientSecret = clientSecret
+                    }
+                };
+
+                var flow = new Google.Apis.Auth.OAuth2.Flows.GoogleAuthorizationCodeFlow(initializer);
+                var token = new Google.Apis.Auth.OAuth2.Responses.TokenResponse
+                {
+                    RefreshToken = refreshToken
+                };
+                var credential = new UserCredential(flow, fromEmail, token);
+
+                var service = new GmailService(new BaseClientService.Initializer
+                {
+                    HttpClientInitializer = credential,
+                    ApplicationName = "E-Library API"
+                });
+
+                string mime;
+                if (isHtml)
+                {
+                    mime = BuildMime(fromEmail, toEmail, subject, body, true);
+                }
+                else
+                {
+                    mime = BuildMime(fromEmail, toEmail, subject, body, false);
+                }
+
+                var raw = Base64UrlEncode(mime);
+                var message = new Message { Raw = raw };
+                await service.Users.Messages.Send(message, "me").ExecuteAsync();
+                _logger.LogInformation($"Email sent successfully via Gmail API to {toEmail}");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Gmail API send failed");
+                return false;
+            }
+        }
+
+        private static string BuildMime(string from, string to, string subject, string body, bool isHtml)
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine($"From: {from}");
+            sb.AppendLine($"To: {to}");
+            sb.AppendLine($"Subject: {subject}");
+            sb.AppendLine("MIME-Version: 1.0");
+            if (isHtml)
+            {
+                sb.AppendLine("Content-Type: text/html; charset=\"UTF-8\"");
+            }
+            else
+            {
+                sb.AppendLine("Content-Type: text/plain; charset=\"UTF-8\"");
+            }
+            sb.AppendLine();
+            sb.Append(body);
+            return sb.ToString();
+        }
+
+        private static string Base64UrlEncode(string input)
+        {
+            return Convert.ToBase64String(Encoding.UTF8.GetBytes(input))
+                .Replace('+', '-')
+                .Replace('/', '_')
+                .TrimEnd('=');
         }
 
         private string GenerateVerificationEmailBody(string userName, string verificationCode)

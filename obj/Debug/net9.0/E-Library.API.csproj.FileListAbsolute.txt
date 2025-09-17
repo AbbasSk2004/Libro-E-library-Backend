@@ -321,3 +321,10 @@ E:\Work\IDS Fin-tech\E-Library\backend\E-Library.API\obj\Debug\net9.0\ref\E-Libr
 E:\Work\IDS Fin-tech\E-Library\backend\E-Library.API\bin\Debug\net9.0\appsettings.Production.json
 E:\Work\IDS Fin-tech\E-Library\elibrary\backend\E-Library.API\bin\Debug\net9.0\appsettings.Production.json
 E:\Work\IDS Fin-tech\E-Library\elibrary\backend\E-Library.API\obj\Debug\net9.0\E-Library.API.sourcelink.json
+E:\Work\IDS Fin-tech\E-Library\elibrary\backend\E-Library.API\bin\Debug\net9.0\Google.Apis.dll
+E:\Work\IDS Fin-tech\E-Library\elibrary\backend\E-Library.API\bin\Debug\net9.0\Google.Apis.Auth.dll
+E:\Work\IDS Fin-tech\E-Library\elibrary\backend\E-Library.API\bin\Debug\net9.0\Google.Apis.Core.dll
+E:\Work\IDS Fin-tech\E-Library\elibrary\backend\E-Library.API\bin\Debug\net9.0\Google.Apis.Gmail.v1.dll
+E:\Work\IDS Fin-tech\E-Library\elibrary\backend\E-Library.API\bin\Debug\net9.0\System.CodeDom.dll
+E:\Work\IDS Fin-tech\E-Library\elibrary\backend\E-Library.API\bin\Debug\net9.0\System.Management.dll
+E:\Work\IDS Fin-tech\E-Library\elibrary\backend\E-Library.API\bin\Debug\net9.0\runtimes\win\lib\net7.0\System.Management.dll
