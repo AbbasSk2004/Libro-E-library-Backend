@@ -59,6 +59,7 @@ namespace E_Library.API.Services
                 var clientId = _configuration["EmailSettings:GoogleClientId"]!;
                 var clientSecret = _configuration["EmailSettings:GoogleClientSecret"]!;
                 var refreshToken = _configuration["EmailSettings:GmailRefreshToken"]!;
+                var fromName = _configuration["EmailSettings:FromName"] ?? "Libro Library";
 
                 var initializer = new Google.Apis.Auth.OAuth2.Flows.GoogleAuthorizationCodeFlow.Initializer
                 {
@@ -82,15 +83,7 @@ namespace E_Library.API.Services
                     ApplicationName = "E-Library API"
                 });
 
-                string mime;
-                if (isHtml)
-                {
-                    mime = BuildMime(fromEmail, toEmail, subject, body, true);
-                }
-                else
-                {
-                    mime = BuildMime(fromEmail, toEmail, subject, body, false);
-                }
+                string mime = BuildMime($"\"{fromName}\" <{fromEmail}>", toEmail, subject, body, isHtml);
 
                 var raw = Base64UrlEncode(mime);
                 var message = new Message { Raw = raw };

@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("E-Library.API")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+965f37682cb8c74f3eb36c5a9f9e4df2b3902c6b")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4caea15a42391107e724d440e2c977a4556d7205")]
 [assembly: System.Reflection.AssemblyProductAttribute("E-Library.API")]
 [assembly: System.Reflection.AssemblyTitleAttribute("E-Library.API")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

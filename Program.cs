@@ -28,6 +28,7 @@ var googleClientId = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_ID");
 var googleClientSecret = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_SECRET");
 var gmailRefreshToken = Environment.GetEnvironmentVariable("GMAIL_REFRESH_TOKEN");
 var gmailUser = Environment.GetEnvironmentVariable("GMAIL_USER");
+var fromName = Environment.GetEnvironmentVariable("FROM_NAME");
 
 // Configure frontend URLs from environment variables
 var frontendUrls = Environment.GetEnvironmentVariable("FRONTEND_URLS");
@@ -49,6 +50,7 @@ builder.Configuration["EmailSettings:GoogleClientId"] = googleClientId;
 builder.Configuration["EmailSettings:GoogleClientSecret"] = googleClientSecret;
 builder.Configuration["EmailSettings:GmailRefreshToken"] = gmailRefreshToken;
 builder.Configuration["EmailSettings:GmailUser"] = gmailUser;
+builder.Configuration["EmailSettings:FromName"] = fromName ?? "Libro Library";
 
 // App settings
 if (!string.IsNullOrEmpty(frontendUrls))
