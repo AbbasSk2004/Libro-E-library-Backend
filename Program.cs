@@ -163,11 +163,18 @@ app.UseAuthorization();
 // Enable static files for uploaded images
 app.UseStaticFiles();
 
-// Initialize database
-using (var scope = app.Services.CreateScope())
+// Initialize database only if a connection string is provided (e.g., skips in CI test containers)
+if (!string.IsNullOrEmpty(dbConnection))
 {
-    var databaseConnection = scope.ServiceProvider.GetRequiredService<DatabaseConnection>();
-    await databaseConnection.InitializeDatabaseAsync();
+    using (var scope = app.Services.CreateScope())
+    {
+        var databaseConnection = scope.ServiceProvider.GetRequiredService<DatabaseConnection>();
+        await databaseConnection.InitializeDatabaseAsync();
+    }
+}
+else
+{
+    Console.WriteLine("No DATABASE_CONNECTION_STRING provided. Skipping DB initialization.");
 }
 
 app.MapControllers();
